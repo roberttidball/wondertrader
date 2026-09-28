@@ -21,27 +21,33 @@ public:
     {
     }
 
-    std::string requestUrl(const std::string& path, const Params& params = Params()) const
+    // Headers to send with each request: {"X-API-Key", key}, or empty when no key is set.
+    // The key is never added to the URL.
+    Params headers() const
     {
-        Params merged = params;
+        Params out;
         if (!_apiKey.empty())
         {
-            merged.push_back(std::make_pair("api_key", _apiKey));
+            out.push_back(std::make_pair("X-API-Key", _apiKey));
         }
+        return out;
+    }
 
+    std::string requestUrl(const std::string& path, const Params& params = Params()) const
+    {
         std::string url = _baseUrl + trimLeadingSlash(path);
-        if (!merged.empty())
+        if (!params.empty())
         {
             url += "?";
-            for (std::size_t i = 0; i < merged.size(); ++i)
+            for (std::size_t i = 0; i < params.size(); ++i)
             {
                 if (i != 0)
                 {
                     url += "&";
                 }
-                url += urlEncode(merged[i].first);
+                url += urlEncode(params[i].first);
                 url += "=";
-                url += urlEncode(merged[i].second);
+                url += urlEncode(params[i].second);
             }
         }
         return url;
